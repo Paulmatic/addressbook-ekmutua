@@ -1,0 +1,137 @@
+{% extends 'contacts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-search"></i> Search Contacts</h4>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="{% url 'contacts:contact-search' %}" class="mb-4">
+                        <div class="input-group">
+                            <input type="text" 
+                                   class="form-control form-control-lg" 
+                                   name="q" 
+                                   placeholder="Search by name, email, file number..." 
+                                   value="{{ request.GET.q }}"
+                                   aria-label="Search contacts">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-search"></i> Search
+                            </button>
+                            <a href="{% url 'contacts:contact-search' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-counterclockwise"></i> Clear
+                            </a>
+                        </div>
+                        <small class="text-muted">Search across names, email addresses, file numbers, and company names</small>
+                    </form>
+
+                    {% if request.GET.q %}
+                        <h5 class="mb-3">Search Results for "{{ request.GET.q }}"</h5>
+                        
+                        {% if object_list %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>File #</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for contact in object_list %}
+                                        <tr>
+                                            <td>{{ contact.file_number }}</td>
+                                            <td>
+                                                <a href="{% url 'contacts:contact-detail' contact.pk %}">
+                                                    {{ contact.last_name }}, {{ contact.first_name }}
+                                                </a>
+                                            </td>
+                                            <td>{{ contact.email }}</td>
+                                            <td>
+                                                <span class="badge bg-{% if contact.client_status == 'ACTIVE' %}success{% elif contact.client_status == 'INACTIVE' %}warning{% else %}info{% endif %}">
+                                                    {{ contact.get_client_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'contacts:contact-update' contact.pk %}" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {% include 'contacts/partials/_pagination.html' %}
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i> No contacts found matching your search criteria.
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-search" style="font-size: 3rem; color: #6c757d;"></i>
+                            <h5 class="mt-3">Enter search terms to find contacts</h5>
+                            <p class="text-muted">Try searching by name, email, file number, or company</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .search-highlight {
+        background-color: #fff3cd;
+        font-weight: bold;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Highlight search terms in results
+    const searchTerm = "{{ request.GET.q }}";
+    if (searchTerm) {
+        const tables = document.querySelectorAll('table');
+        tables.forEach(table => {
+            const textNodes = [];
+            const walker = document.createTreeWalker(
+                table,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+            
+            let node;
+            while (node = walker.nextNode()) {
+                if (node.nodeValue.trim().length > 0) {
+                    textNodes.push(node);
+                }
+            }
+            
+            textNodes.forEach(node => {
+                const text = node.nodeValue;
+                const regex = new RegExp(searchTerm, 'gi');
+                if (regex.test(text)) {
+                    const parent = node.parentNode;
+                    if (parent.childNodes.length === 1 && parent.nodeName !== 'SCRIPT') {
+                        parent.innerHTML = text.replace(
+                            regex,
+                            match => `<span class="search-highlight">${match}</span>`
+                        );
+                    }
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Address Book{% endblock %}</title>
+    <link href="{% static 'contacts/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'contacts/css/styles.css' %}" rel="stylesheet">
+</head>
+<body>
+    {% include 'contacts/partials/_navbar.html' %}
+    
+    <div class="container mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="{% static 'contacts/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'contacts/js/main.js' %}"></script>
+</body>
+</html>
