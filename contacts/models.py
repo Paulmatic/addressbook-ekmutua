@@ -1,7 +1,24 @@
 from django.db import models
+from django.contrib.auth import get_user_model
 from django.contrib.postgres.search import SearchVectorField
 from django.urls import reverse
 from django.core.validators import EmailValidator, RegexValidator
+
+User = get_user_model()
+
+class UploadedFile(models.Model):
+    file = models.FileField(upload_to='uploads/%Y/%m/%d/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    shared_with = models.ManyToManyField(User, related_name='shared_files', blank=True)
+    
+    def __str__(self):
+        return self.file.name
+
+    class Meta:
+        verbose_name = "Uploaded File"
+        verbose_name_plural = "Uploaded Files"
+        ordering = ['-uploaded_at']
 
 class Contact(models.Model):
     FILE_STATUS_CHOICES = [
@@ -10,9 +27,9 @@ class Contact(models.Model):
     ]
     
     CLIENT_STATUS_CHOICES = [
-        ('ACTIVE', 'Active'),          # 6 chars
-        ('INACTIVE', 'Inactive'),      # 8 chars
-        ('POTENTIAL', 'Potential'),    # 9 chars
+        ('ACTIVE', 'Active'),
+        ('INACTIVE', 'Inactive'),
+        ('POTENTIAL', 'Potential'),
     ]
 
     first_name = models.CharField(
@@ -63,7 +80,7 @@ class Contact(models.Model):
         help_text="Unique identifier for this contact file"
     )
     client_status = models.CharField(
-        max_length=9,  # Changed from 8 to 9 to accommodate 'POTENTIAL'
+        max_length=9,
         choices=CLIENT_STATUS_CHOICES,
         default='ACTIVE',
         verbose_name="Client Status"
@@ -86,6 +103,12 @@ class Contact(models.Model):
         null=True,
         blank=True,
         verbose_name="Search Vector"
+    )
+    files = models.ManyToManyField(
+        UploadedFile,
+        blank=True,
+        related_name='contacts',
+        verbose_name="Associated Files"
     )
 
     class Meta:
@@ -138,3 +161,12 @@ class Contact(models.Model):
         if len(self.phone_number) == 10:
             return f"({self.phone_number[:3]}) {self.phone_number[3:6]}-{self.phone_number[6:]}"
         return self.phone_number
+
+    def get_associated_files(self, user=None):
+        """Returns files associated with this contact, optionally filtered by user access"""
+        if user:
+            return self.files.filter(
+                models.Q(uploaded_by=user) | 
+                models.Q(shared_with=user)
+            ).distinct()
+        return self.files.all()

@@ -1,3 +1,4 @@
+version: '3.8'
 
 services:
   web:
@@ -10,7 +11,9 @@ services:
     volumes:
       - static_volume:/code/staticfiles
       - media_volume:/code/media
-    depends_on:  # Removed port 8000 exposure for production
+    ports:
+      - "8000:8000"  # Exposed port for direct access
+    depends_on:
       db:
         condition: service_healthy
     networks:
