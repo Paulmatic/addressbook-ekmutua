@@ -16,7 +16,8 @@
                     </h4>
                 </div>
                 <div class="card-body">
-                    <form method="post" novalidate>
+                    <!-- CRITICAL: Added enctype for file uploads -->
+                    <form method="post" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
                         
                         <div class="row mb-3">
@@ -128,6 +129,32 @@
                             </div>
                         </div>
 
+                        <!-- FILE UPLOAD SECTION - ADDED -->
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="{{ form.file.id_for_label }}" class="form-label">
+                                        Associated Files
+                                    </label>
+                                    <div class="custom-file-input">
+                                        {{ form.file }}
+                                        <label class="file-input-label" for="{{ form.file.id_for_label }}">
+                                            <i class="bi bi-upload"></i> Choose File
+                                        </label>
+                                        <span class="file-name-display">No file chosen</span>
+                                    </div>
+                                    {% if form.file.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.file.errors|first }}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        Max file size: 10MB. Allowed formats: PDF, DOC, DOCX, JPG, PNG
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="mb-3">
                             <div class="form-group">
                                 <label for="{{ form.address.id_for_label }}" class="form-label">
@@ -174,6 +201,40 @@
         border-color: #dc3545;
         box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
     }
+    
+    /* Custom File Input Styling */
+    .custom-file-input {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+        width: 100%;
+    }
+    .custom-file-input input[type="file"] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+    .file-input-label {
+        display: block;
+        padding: 0.5rem 1rem;
+        background: #f8f9fa;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        text-align: center;
+        transition: all 0.3s;
+    }
+    .file-input-label:hover {
+        background: #e9ecef;
+    }
+    .file-name-display {
+        margin-left: 10px;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
 </style>
 
 <script>
@@ -198,6 +259,20 @@
                 field.classList.add('is-invalid');
             }
         });
+
+        // File input display logic
+        const fileInput = document.querySelector('input[type="file"]');
+        const fileNameDisplay = document.querySelector('.file-name-display');
+        
+        if (fileInput) {
+            fileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    fileNameDisplay.textContent = this.files[0].name;
+                } else {
+                    fileNameDisplay.textContent = 'No file chosen';
+                }
+            });
+        }
     });
 </script>
 {% endblock %}

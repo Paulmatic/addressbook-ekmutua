@@ -1,0 +1,123 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'contacts:contact-list' %}">
+            <i class="bi bi-journal-text"></i> Contact Manager
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'contact-list' %}active{% endif %}" 
+                       href="{% url 'contacts:contact-list' %}">
+                        <i class="bi bi-people-fill"></i> All Contacts
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'contact-create' %}active{% endif %}" 
+                       href="{% url 'contacts:contact-create' %}">
+                        <i class="bi bi-person-plus"></i> Add New
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="reportsDropdown" role="button" 
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-graph-up"></i> Reports
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="reportsDropdown">
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-text"></i> Client Status</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-bar-graph"></i> File Status</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-download"></i> Export All</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <div class="d-flex">
+                <form class="d-flex me-2" method="GET" action="{% url 'contacts:contact-search' %}">
+                    <div class="input-group">
+                        <input type="search" class="form-control" placeholder="Search..." 
+                               aria-label="Search" name="q" value="{{ request.GET.q }}">
+                        <button class="btn btn-light" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
+
+                {% if user.is_authenticated %}
+                <div class="dropdown">
+                    <button class="btn btn-outline-light dropdown-toggle" type="button" 
+                            id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle"></i> {{ user.username }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-person"></i> Profile</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Settings</a></li>
+                        {% if user.is_superuser %}
+                        <li><a class="dropdown-item" href="{% url 'admin:index' %}">
+                            <i class="bi bi-shield-lock"></i> Admin
+                        </a></li>
+                        {% endif %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="post" action="{% url 'contacts:logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item">
+                                    <i class="bi bi-box-arrow-right"></i> Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-outline-light">
+                    <i class="bi bi-box-arrow-in-right"></i> Login
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<style>
+    .navbar {
+        padding: 0.5rem 1rem;
+    }
+    .navbar-brand {
+        font-weight: 600;
+        font-size: 1.25rem;
+    }
+    .nav-link {
+        padding: 0.5rem 1rem;
+    }
+    .dropdown-menu {
+        border: none;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    .dropdown-item {
+        padding: 0.5rem 1rem;
+    }
+    .input-group {
+        width: 250px;
+    }
+    @media (max-width: 992px) {
+        .input-group {
+            width: 200px;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Highlight active dropdown items
+    const currentUrl = window.location.pathname;
+    document.querySelectorAll('.dropdown-item[href]').forEach(item => {
+        if (item.getAttribute('href') === currentUrl) {
+            item.classList.add('active');
+        }
+    });
+});
+</script>

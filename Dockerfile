@@ -52,6 +52,10 @@ RUN pip install --no-cache /wheels/* && \
 # Copy project files with correct permissions
 COPY --chown=myuser:myuser . /code/
 
+# Copy templates and static files
+COPY --chown=myuser:myuser ./contacts/templates/ /code/contacts/templates/
+COPY --chown=myuser:myuser ./contacts/static/ /code/contacts/static/
+
 # Set directory permissions
 RUN chmod -R 755 /code/static /code/staticfiles /code/media && \
     chmod +x /code/entrypoint.sh
