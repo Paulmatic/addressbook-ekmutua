@@ -86,22 +86,6 @@ class ContactSearchView(ListView):
         return Contact.objects.none()
 
 
-class CustomLogoutView(AuthLogoutView):
-    next_page = reverse_lazy('contact-list')
-    
-    def dispatch(self, request, *args, **kwargs):
-        messages.success(request, 'You have been logged out successfully.')
-        return super().dispatch(request, *args, **kwargs)
-
-
-class CustomLogoutView(AuthLogoutView):
-    next_page = reverse_lazy('contact-list')
-    
-    def dispatch(self, request, *args, **kwargs):
-        messages.success(request, 'You have been logged out successfully.')
-        return super().dispatch(request, *args, **kwargs)
-
-
 def upload_file(request):
     if request.method == 'POST':
         form = FileUploadForm(request.POST, request.FILES)

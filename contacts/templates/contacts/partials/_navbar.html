@@ -47,23 +47,22 @@
                     </div>
                 </form>
 
-                {% if user.is_authenticated %}
                 <div class="dropdown">
                     <button class="btn btn-outline-light dropdown-toggle" type="button" 
                             id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-person-circle"></i> {{ user.username }}
+                        <i class="bi bi-person-circle"></i> {{ request.user.username }}
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li><a class="dropdown-item" href="#"><i class="bi bi-person"></i> Profile</a></li>
                         <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Settings</a></li>
-                        {% if user.is_superuser %}
+                        {% if request.user.is_superuser %}
                         <li><a class="dropdown-item" href="{% url 'admin:index' %}">
                             <i class="bi bi-shield-lock"></i> Admin
                         </a></li>
                         {% endif %}
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <form method="post" action="{% url 'contacts:logout' %}">
+                            <form method="post" action="{% url 'logout' %}">
                                 {% csrf_token %}
                                 <button type="submit" class="dropdown-item">
                                     <i class="bi bi-box-arrow-right"></i> Logout
@@ -72,11 +71,6 @@
                         </li>
                     </ul>
                 </div>
-                {% else %}
-                <a href="{% url 'login' %}" class="btn btn-outline-light">
-                    <i class="bi bi-box-arrow-in-right"></i> Login
-                </a>
-                {% endif %}
             </div>
         </div>
     </div>
@@ -114,9 +108,19 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Highlight active dropdown items
     const currentUrl = window.location.pathname;
-    document.querySelectorAll('.dropdown-item[href]').forEach(item => {
+    document.querySelectorAll('.dropdown-item').forEach(item => {
         if (item.getAttribute('href') === currentUrl) {
             item.classList.add('active');
+        }
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.dropdown')) {
+            const openDropdowns = document.querySelectorAll('.dropdown-menu.show');
+            openDropdowns.forEach(dropdown => {
+                dropdown.classList.remove('show');
+            });
         }
     });
 });

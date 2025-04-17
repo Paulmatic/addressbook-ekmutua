@@ -1,4 +1,4 @@
-version: '3.8'
+
 
 services:
   web:
@@ -16,14 +16,10 @@ services:
     volumes:
       - static_volume:/code/staticfiles
       - media_volume:/code/media
-<<<<<<< HEAD
+      - ./media:/code/media  # Local development override
+    user: "1000:1000"  # Run as non-root user with your host UID/GID
     ports:
-      - "8000:8000"  # Exposed port for direct access
-=======
-      - ./media:/code/media  # Local media directory for development
-    ports:
-      - "8000:8000"  # Exposed for development (remove in production)
->>>>>>> f6057fda33f8f11b492bbcaff76d4e84f996b29e
+      - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -42,7 +38,7 @@ services:
       - .env.prod
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./config/postgresql.conf:/etc/postgresql/postgresql.conf
     command: postgres -c config_file=/etc/postgresql/postgresql.conf
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
@@ -56,12 +52,11 @@ services:
   nginx:
     image: nginx:1.21-alpine
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/conf.d/addressbook.conf:/etc/nginx/conf.d/default.conf
-      - ./nginx/ssl:/etc/nginx/ssl
-      - static_volume:/code/staticfiles
-      - media_volume:/code/media
-      - ./media:/code/media  # Ensure nginx can serve uploaded files
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./config/nginx/conf.d/addressbook.conf:/etc/nginx/conf.d/default.conf
+      - ./config/nginx/ssl:/etc/nginx/ssl
+      - static_volume:/code/staticfiles:ro
+      - media_volume:/code/media:ro
     ports:
       - "80:80"
       - "443:443"
@@ -75,8 +70,8 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     ports:
@@ -89,20 +84,14 @@ services:
 
 volumes:
   postgres_data:
-    driver: local
   static_volume:
-    driver: local
   media_volume:
-    driver: local
     driver_opts:
-      o: bind
       type: none
-      device: /absolute/path/to/persistent/media  # For production
+      device: ${MEDIA_VOLUME_PATH:-./media}  # Use environment variable or default
+      o: bind
   pgadmin_data:
-    driver: local
 
 networks:
   backend:
-    driver: bridge
   frontend:
-    driver: bridge
