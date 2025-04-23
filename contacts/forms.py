@@ -30,7 +30,11 @@ class ContactForm(forms.ModelForm):
             'first_name', 'middle_name', 'last_name',
             'phone_number', 'email', 'address',
             'file_status', 'file_number', 'client_status',
-            'company', 'files', 'tags'
+            'company', 'files', 'tags',
+            'file_open_date', 'judgement', 'judgement_date',
+            'ruling', 'ruling_date', 'order', 'order_date',
+            'payment_mode', 'payment_date', 'receipt_number',
+            'receipt_attachment'
         ]
         widgets = {
             'first_name': forms.TextInput(attrs={
@@ -76,15 +80,66 @@ class ContactForm(forms.ModelForm):
                 'class': 'form-select',
                 'data-placeholder': _('Select tags...')
             }),
+            'file_open_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'judgement': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'judgement_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'ruling': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'ruling_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'order': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'order_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'payment_mode': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'payment_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'receipt_number': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': _('Receipt number')
+            }),
+            'receipt_attachment': forms.FileInput(attrs={
+                'class': 'form-control'
+            }),
         }
         labels = {
             'file_number': _('File/Case Number'),
             'file_status': _('File Status'),
             'client_status': _('Client Status'),
+            'file_open_date': _('File Open Date'),
+            'judgement': _('Judgement'),
+            'judgement_date': _('Judgement Date'),
+            'ruling': _('Ruling'),
+            'ruling_date': _('Ruling Date'),
+            'order': _('Order'),
+            'order_date': _('Order Date'),
+            'payment_mode': _('Payment Mode'),
+            'payment_date': _('Payment Date'),
+            'receipt_number': _('Receipt Number'),
+            'receipt_attachment': _('Receipt Attachment'),
         }
         help_texts = {
             'file_number': _('Leave blank to auto-generate'),
             'phone_number': _('Format: +[country code][number]'),
+            'receipt_attachment': _('Upload scanned receipt copy'),
         }
 
     def __init__(self, *args, **kwargs):
@@ -116,6 +171,25 @@ class ContactForm(forms.ModelForm):
             last_id = last_contact.id if last_contact else 0
             return f"CL-{last_id + 1:05d}"
         return file_number
+
+    def clean_receipt_attachment(self):
+        receipt = self.cleaned_data.get('receipt_attachment')
+        if receipt:
+            # Validate file size (5MB limit for receipts)
+            max_size = 5 * 1024 * 1024
+            if receipt.size > max_size:
+                raise forms.ValidationError(
+                    _('Receipt file too large. Maximum size is 5MB.')
+                )
+            
+            # Validate file extensions
+            valid_extensions = ['.pdf', '.jpg', '.jpeg', '.png']
+            if not any(receipt.name.lower().endswith(ext) for ext in valid_extensions):
+                raise forms.ValidationError(
+                    _('Unsupported file type for receipts. Allowed types: ') +
+                    ', '.join(ext.strip('.') for ext in valid_extensions)
+                )
+        return receipt
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -223,6 +297,13 @@ class ContactFilterForm(forms.Form):
         ('', _('All Clients')),
         *Contact.ClientStatus.choices
     ]
+    
+    JUDGEMENT_CHOICES = [
+        ('', _('All Judgements')),
+        ('allowed', 'Allowed'),
+        ('dismissed', 'Dismissed'),
+        ('referred', 'Referred'),
+    ]
 
     search = forms.CharField(
         required=False,
@@ -245,6 +326,13 @@ class ContactFilterForm(forms.Form):
             'class': 'form-select'
         })
     )
+    judgement = forms.ChoiceField(
+        choices=JUDGEMENT_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'form-select'
+        })
+    )
     tags = forms.ModelMultipleChoiceField(
         queryset=Contact.tags.field.related_model.objects.none(),
         required=False,
@@ -252,6 +340,24 @@ class ContactFilterForm(forms.Form):
             'class': 'form-select',
             'data-placeholder': _('Filter by tags...')
         })
+    )
+    date_from = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={
+            'class': 'form-control',
+            'type': 'date',
+            'placeholder': _('From date')
+        }),
+        label=_('From')
+    )
+    date_to = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={
+            'class': 'form-control',
+            'type': 'date',
+            'placeholder': _('To date')
+        }),
+        label=_('To')
     )
 
     def __init__(self, *args, **kwargs):

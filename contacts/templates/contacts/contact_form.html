@@ -4,7 +4,7 @@
 {% block content %}
 <div class="container mt-4">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-md-10">
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0">
@@ -16,12 +16,13 @@
                     </h4>
                 </div>
                 <div class="card-body">
-                    <!-- CRITICAL: Added enctype for file uploads -->
                     <form method="post" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
                         
+                        <!-- Basic Information Section -->
+                        <h5 class="mb-3 border-bottom pb-2">Basic Information</h5>
                         <div class="row mb-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="{{ form.first_name.id_for_label }}" class="form-label">
                                         First Name <span class="text-danger">*</span>
@@ -34,7 +35,15 @@
                                     {% endif %}
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.middle_name.id_for_label }}" class="form-label">
+                                        Middle Name
+                                    </label>
+                                    {{ form.middle_name }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="{{ form.last_name.id_for_label }}" class="form-label">
                                         Last Name <span class="text-danger">*</span>
@@ -52,22 +61,29 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="{{ form.middle_name.id_for_label }}" class="form-label">
-                                        Middle Name
+                                    <label for="{{ form.file_number.id_for_label }}" class="form-label">
+                                        File Number <span class="text-danger">*</span>
                                     </label>
-                                    {{ form.middle_name }}
+                                    {{ form.file_number }}
+                                    {% if form.file_number.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.file_number.errors|first }}
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="{{ form.company.id_for_label }}" class="form-label">
-                                        Company
+                                    <label for="{{ form.file_open_date.id_for_label }}" class="form-label">
+                                        File Open Date
                                     </label>
-                                    {{ form.company }}
+                                    {{ form.file_open_date }}
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Contact Details Section -->
+                        <h5 class="mb-3 border-bottom pb-2">Contact Details</h5>
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -100,15 +116,10 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="{{ form.file_number.id_for_label }}" class="form-label">
-                                        File Number <span class="text-danger">*</span>
+                                    <label for="{{ form.company.id_for_label }}" class="form-label">
+                                        Company
                                     </label>
-                                    {{ form.file_number }}
-                                    {% if form.file_number.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.file_number.errors|first }}
-                                        </div>
-                                    {% endif %}
+                                    {{ form.company }}
                                 </div>
                             </div>
                             <div class="col-md-3">
@@ -129,32 +140,6 @@
                             </div>
                         </div>
 
-                        <!-- FILE UPLOAD SECTION - ADDED -->
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="{{ form.file.id_for_label }}" class="form-label">
-                                        Associated Files
-                                    </label>
-                                    <div class="custom-file-input">
-                                        {{ form.file }}
-                                        <label class="file-input-label" for="{{ form.file.id_for_label }}">
-                                            <i class="bi bi-upload"></i> Choose File
-                                        </label>
-                                        <span class="file-name-display">No file chosen</span>
-                                    </div>
-                                    {% if form.file.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.file.errors|first }}
-                                        </div>
-                                    {% endif %}
-                                    <small class="form-text text-muted">
-                                        Max file size: 10MB. Allowed formats: PDF, DOC, DOCX, JPG, PNG
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-
                         <div class="mb-3">
                             <div class="form-group">
                                 <label for="{{ form.address.id_for_label }}" class="form-label">
@@ -166,6 +151,169 @@
                                         {{ form.address.errors|first }}
                                     </div>
                                 {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Case Information Section -->
+                        <h5 class="mb-3 border-bottom pb-2">Case Information</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.judgement.id_for_label }}" class="form-label">
+                                        Judgement
+                                    </label>
+                                    {{ form.judgement }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.judgement_date.id_for_label }}" class="form-label">
+                                        Judgement Date
+                                    </label>
+                                    {{ form.judgement_date }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.ruling.id_for_label }}" class="form-label">
+                                        Ruling
+                                    </label>
+                                    {{ form.ruling }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.ruling_date.id_for_label }}" class="form-label">
+                                        Ruling Date
+                                    </label>
+                                    {{ form.ruling_date }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.order.id_for_label }}" class="form-label">
+                                        Order
+                                    </label>
+                                    {{ form.order }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.order_date.id_for_label }}" class="form-label">
+                                        Order Date
+                                    </label>
+                                    {{ form.order_date }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Information Section -->
+                        <h5 class="mb-3 border-bottom pb-2">Payment Information</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.payment_mode.id_for_label }}" class="form-label">
+                                        Payment Mode
+                                    </label>
+                                    {{ form.payment_mode }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.payment_date.id_for_label }}" class="form-label">
+                                        Payment Date
+                                    </label>
+                                    {{ form.payment_date }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.receipt_number.id_for_label }}" class="form-label">
+                                        Receipt Number
+                                    </label>
+                                    {{ form.receipt_number }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.receipt_attachment.id_for_label }}" class="form-label">
+                                        Receipt Attachment
+                                    </label>
+                                    <div class="custom-file-input">
+                                        {{ form.receipt_attachment }}
+                                        <label class="file-input-label" for="{{ form.receipt_attachment.id_for_label }}">
+                                            <i class="bi bi-upload"></i> Choose File
+                                        </label>
+                                        <span class="file-name-display">
+                                            {% if form.receipt_attachment.value %}
+                                                {{ form.receipt_attachment.value }}
+                                            {% else %}
+                                                No file chosen
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    {% if form.receipt_attachment.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.receipt_attachment.errors|first }}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        Max file size: 5MB. Allowed formats: PDF, JPG, PNG
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Files Section -->
+                        <h5 class="mb-3 border-bottom pb-2">Associated Files</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="{{ form.files.id_for_label }}" class="form-label">
+                                        Select Existing Files
+                                    </label>
+                                    {{ form.files }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        Upload New Files
+                                    </label>
+                                    <div class="custom-file-input">
+                                        {{ form.new_files }}
+                                        <label class="file-input-label" for="{{ form.new_files.id_for_label }}">
+                                            <i class="bi bi-upload"></i> Choose Files
+                                        </label>
+                                        <span class="file-name-display">No files chosen</span>
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        Max file size: 10MB. Allowed formats: PDF, DOC, DOCX, JPG, PNG
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notes Section -->
+                        <h5 class="mb-3 border-bottom pb-2">Additional Information</h5>
+                        <div class="mb-3">
+                            <div class="form-group">
+                                <label for="{{ form.notes.id_for_label }}" class="form-label">
+                                    Notes
+                                </label>
+                                {{ form.notes }}
                             </div>
                         </div>
 
@@ -235,6 +383,11 @@
         font-size: 0.9rem;
         color: #6c757d;
     }
+    
+    /* Section styling */
+    h5.border-bottom {
+        color: #0d6efd;
+    }
 </style>
 
 <script>
@@ -261,18 +414,31 @@
         });
 
         // File input display logic
-        const fileInput = document.querySelector('input[type="file"]');
-        const fileNameDisplay = document.querySelector('.file-name-display');
-        
-        if (fileInput) {
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        fileInputs.forEach(fileInput => {
+            const fileNameDisplay = fileInput.closest('.custom-file-input').querySelector('.file-name-display');
+            
             fileInput.addEventListener('change', function() {
                 if (this.files.length > 0) {
-                    fileNameDisplay.textContent = this.files[0].name;
+                    if (this.files.length === 1) {
+                        fileNameDisplay.textContent = this.files[0].name;
+                    } else {
+                        fileNameDisplay.textContent = `${this.files.length} files selected`;
+                    }
                 } else {
                     fileNameDisplay.textContent = 'No file chosen';
                 }
             });
-        }
+            
+            // Initialize with existing file name if present
+            if (fileInput.files.length > 0) {
+                if (fileInput.files.length === 1) {
+                    fileNameDisplay.textContent = fileInput.files[0].name;
+                } else {
+                    fileNameDisplay.textContent = `${fileInput.files.length} files selected`;
+                }
+            }
+        });
     });
 </script>
 {% endblock %}

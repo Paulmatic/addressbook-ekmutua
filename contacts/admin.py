@@ -47,14 +47,20 @@ class ContactAdmin(admin.ModelAdmin):
         'company', 
         'status_badge', 
         'file_count',
-        'created_at'
+        'created_at',
+        'judgement_status'
     )
     list_filter = (
         'client_status', 
-        'file_status', 
+        'file_status',
+        'judgement',
+        'ruling',
+        'order',
+        'payment_mode',
         ('created_by', admin.RelatedOnlyFieldListFilter),
         ('tags', admin.RelatedOnlyFieldListFilter),
-        'created_at'
+        'created_at',
+        'file_open_date'
     )
     search_fields = (
         'first_name', 
@@ -63,7 +69,8 @@ class ContactAdmin(admin.ModelAdmin):
         'file_number', 
         'email',
         'company',
-        'address'
+        'address',
+        'receipt_number'
     )
     ordering = ('-created_at',)
     list_per_page = 25
@@ -74,13 +81,15 @@ class ContactAdmin(admin.ModelAdmin):
         'created_at', 
         'updated_at', 
         'created_by',
-        'search_vector_preview'
+        'search_vector_preview',
+        'receipt_preview'
     )
     fieldsets = (
         (_("Basic Information"), {
             'fields': (
                 ('first_name', 'middle_name', 'last_name'),
-                ('file_number', 'created_at'),
+                ('file_number', 'file_open_date'),
+                ('file_status', 'client_status'),
             )
         }),
         (_("Contact Details"), {
@@ -90,9 +99,22 @@ class ContactAdmin(admin.ModelAdmin):
                 'company',
             )
         }),
-        (_("Status Information"), {
+        (_("Case Information"), {
             'fields': (
-                ('client_status', 'file_status'),
+                ('judgement', 'judgement_date'),
+                ('ruling', 'ruling_date'),
+                ('order', 'order_date'),
+            )
+        }),
+        (_("Payment Information"), {
+            'fields': (
+                ('payment_mode', 'payment_date'),
+                ('receipt_number', 'receipt_attachment'),
+                'receipt_preview',
+            )
+        }),
+        (_("Assignment & Tags"), {
+            'fields': (
                 ('assigned_to', 'tags'),
             )
         }),
@@ -101,6 +123,7 @@ class ContactAdmin(admin.ModelAdmin):
                 'files',
                 ('created_by', 'updated_at'),
                 'search_vector_preview',
+                'notes',
             ),
             'classes': ('collapse',)
         }),
@@ -131,6 +154,16 @@ class ContactAdmin(admin.ModelAdmin):
         )
     status_badge.short_description = _("Status")
     
+    def judgement_status(self, obj):
+        if obj.judgement:
+            return format_html(
+                '<span class="badge {}">{}</span>',
+                'bg-info',
+                obj.get_judgement_display()
+            )
+        return ''
+    judgement_status.short_description = _("Judgement")
+    
     def file_count(self, obj):
         return obj.file_count
     file_count.short_description = _("Files")
@@ -142,6 +175,15 @@ class ContactAdmin(admin.ModelAdmin):
             obj.search_vector
         )
     search_vector_preview.short_description = _("Search Vector Preview")
+    
+    def receipt_preview(self, obj):
+        if obj.receipt_attachment:
+            return format_html(
+                '<a href="{}" target="_blank">View Receipt</a>',
+                obj.receipt_attachment.url
+            )
+        return _("No receipt attached")
+    receipt_preview.short_description = _("Receipt")
     
     def save_model(self, request, obj, form, change):
         if not obj.pk:
@@ -289,5 +331,6 @@ class Media:
         )
     }
     js = (
+        'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js',
         'admin/js/custom.js',
     )

@@ -7,6 +7,32 @@ from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
 
+# Choice definitions for new fields
+JUDGEMENT_CHOICES = [
+    ('allowed', 'Allowed'),
+    ('dismissed', 'Dismissed'),
+    ('referred', 'Referred'),
+]
+
+RULING_CHOICES = [
+    ('allowed', 'Allowed'),
+    ('dismissed', 'Dismissed'),
+    ('referred', 'Referred'),
+]
+
+ORDER_CHOICES = [
+    ('allowed', 'Allowed'),
+    ('dismissed', 'Dismissed'),
+    ('referred', 'Referred'),
+]
+
+PAYMENT_MODE_CHOICES = [
+    ('cash', 'Cash'),
+    ('mpesa', 'MPESA'),
+    ('bank_transfer', 'Bank Transfer'),
+    ('cheque', 'Cheque'),
+]
+
 class UploadedFile(models.Model):
     class FileCategory(models.TextChoices):
         DOCUMENT = 'DOC', _('Document')
@@ -141,6 +167,12 @@ class Contact(models.Model):
         verbose_name=_("File/Case Number"),
         help_text=_("Unique identifier for this contact file")
     )
+    file_open_date = models.DateField(
+        verbose_name=_("File Open Date"),
+        help_text=_("Date when the file/case was opened"),
+        blank=True,
+        null=True
+    )
     client_status = models.CharField(
         max_length=9,
         choices=ClientStatus.choices,
@@ -158,6 +190,75 @@ class Contact(models.Model):
         null=True,
         verbose_name=_("Internal Notes")
     )
+    
+    # New judgement fields
+    judgement = models.CharField(
+        max_length=20,
+        choices=JUDGEMENT_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name=_("Judgement")
+    )
+    judgement_date = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name=_("Judgement Date")
+    )
+    
+    # New ruling fields
+    ruling = models.CharField(
+        max_length=20,
+        choices=RULING_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name=_("Ruling")
+    )
+    ruling_date = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name=_("Ruling Date")
+    )
+    
+    # New order fields
+    order = models.CharField(
+        max_length=20,
+        choices=ORDER_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name=_("Order")
+    )
+    order_date = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name=_("Order Date")
+    )
+    
+    # New payment fields
+    payment_mode = models.CharField(
+        max_length=20,
+        choices=PAYMENT_MODE_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name=_("Payment Mode")
+    )
+    payment_date = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name=_("Payment Date")
+    )
+    receipt_number = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name=_("Receipt Number")
+    )
+    receipt_attachment = models.FileField(
+        upload_to='receipts/%Y/%m/%d/',
+        blank=True,
+        null=True,
+        verbose_name=_("Receipt Attachment")
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name=_("Creation Date")
@@ -233,6 +334,10 @@ class Contact(models.Model):
             last_contact = Contact.objects.order_by('-id').first()
             last_id = last_contact.id if last_contact else 0
             self.file_number = f"CL-{last_id + 1:05d}"
+        
+        # Set file open date if not provided and this is a new record
+        if not self.pk and not self.file_open_date:
+            self.file_open_date = timezone.now().date()
         
         super().save(*args, **kwargs)
         
@@ -329,7 +434,6 @@ class ContactTag(models.Model):
     @property
     def text_color(self):
         """Returns appropriate text color based on background color"""
-        # Simple luminance calculation to determine if white or black text is better
         hex_color = self.color.lstrip('#')
         rgb = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
         luminance = (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255
