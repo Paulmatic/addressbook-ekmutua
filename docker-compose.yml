@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   web:
     build:
@@ -14,8 +16,8 @@ services:
     volumes:
       - static_volume:/code/staticfiles
       - media_volume:/code/media
-      - ./media:/code/media  # Local development override
-    user: "0:0"  # Run as non-root user with your host UID/GID
+      - ./media:/code/media
+    user: "0:0"
     ports:
       - "8000:8000"
     depends_on:
@@ -80,13 +82,30 @@ services:
     depends_on:
       - db
 
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.0
+    container_name: cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - "8080:8080"  # Different port than Nginx (80/443) and web (8000)
+    networks:
+      - backend
+    restart: unless-stopped
+    privileged: true
+    devices:
+      - /dev/kmsg:/dev/kmsg
+
 volumes:
   postgres_data:
   static_volume:
   media_volume:
     driver_opts:
       type: none
-      device: ${MEDIA_VOLUME_PATH:-./media}  # Use environment variable or default
+      device: ${MEDIA_VOLUME_PATH:-./media}
       o: bind
   pgadmin_data:
 
